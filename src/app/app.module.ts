@@ -3,23 +3,31 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from '../module/users/users.module';
 import { ConfigModule } from '@nestjs/config';
-import * as path from 'path'; // 导入 path 模块
+import * as path from 'path';
 import injectMysql from '../plugins/mysql';
 import injectRedis from '../plugins/redis';
+import { CommonModule } from '../common';
+import { appConfig, databaseConfig, jwtConfig, redisConfig } from '../config';
 
 @Module({
   imports: [
-    UsersModule,
-    // AuthModule,
+    // 配置模块
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [
         path.resolve(process.cwd(), 'env/.env'),
         path.resolve(process.cwd(), 'env/.env.development'),
       ],
+      load: [appConfig, databaseConfig, jwtConfig, redisConfig],
     }),
+    // 通用模块（全局）
+    CommonModule,
+    // 数据库和缓存
     injectMysql,
     injectRedis,
+    // 业务模块
+    UsersModule,
+    // AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

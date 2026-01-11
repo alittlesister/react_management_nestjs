@@ -8,53 +8,60 @@ import {
   HttpStatus,
   Query,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
+import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
-import { PasswordService } from 'src/common/utils/password';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { Public } from '../../common';
 
 @Controller('users')
 export class UsersController {
-  constructor(
-    @InjectRepository(User) private readonly repo: Repository<User>,
-    private readonly passwordService: PasswordService, // ✅ 注入
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
+  /**
+   * 用户注册
+   */
+  @Public()
   @Post('register')
   async register(@Body() createUserDto: CreateUserDto) {
-    return this.repo.save(createUserDto);
+    return this.usersService.register(createUserDto);
   }
 
+  /**
+   * 用户登录
+   */
+  @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginUserDto) {
-    return this.passwordService.verifyPassword(
-      loginDto.password,
-      loginDto.userName,
-    );
+    return this.usersService.login(loginDto.userName, loginDto.password);
   }
 
-  @Get('user')
-  queryAll(
-    @Query('pageNum') pageNum: string,
-    @Query('pageSize') pageSize: string,
+  /**
+   * 获取用户列表（分页）
+   */
+  @Get()
+  async findAll(
+    @Query('pageNum', new ParseIntPipe({ optional: true })) pageNum = 1,
+    @Query('pageSize', new ParseIntPipe({ optional: true })) pageSize = 10,
   ) {
-    return this.repo.find({
-      skip: (Number(pageNum) - 1) * Number(pageSize),
-      take: Number(pageSize),
-    });
+    return this.usersService.findAll(pageNum, pageSize);
   }
 
-  @Get('user/:id')
-  queryOne(@Param('id') id: string) {
-    return this.repo.findOne({ where: { id: Number(id) } });
+  /**
+   * 获取单个用户
+   */
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.findOne(id);
   }
 
-  @Delete('user/:id')
-  delete(@Param('id') id: string) {
-    return this.repo.delete(Number(id));
+  /**
+   * 删除用户
+   */
+  @Delete(':id')
+  async delete(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.delete(id);
   }
 }

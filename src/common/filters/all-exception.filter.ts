@@ -18,14 +18,11 @@ type HttpExceptionBody =
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
-    // 如果你用 Fastify，可改成：
-    // type ReplyLike = { status: (n: number) => ReplyLike; json: (v: unknown) => void };
-    // const res = host.switchToHttp().getResponse<ReplyLike>();
     const res = host.switchToHttp().getResponse<Response>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal Server Error';
-    let code = status;
+    let code: number = status;
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
