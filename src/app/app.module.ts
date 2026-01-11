@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from '../module/users/user.module';
+import { UsersModule } from '../module/users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import * as path from 'path'; // 导入 path 模块
 import injectMysql from '../plugins/mysql';
@@ -9,7 +9,7 @@ import injectRedis from '../plugins/redis';
 
 @Module({
   imports: [
-    UserModule,
+    UsersModule,
     // AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
