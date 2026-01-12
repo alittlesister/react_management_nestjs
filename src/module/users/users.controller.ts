@@ -9,39 +9,32 @@ import {
   Query,
   Delete,
   ParseIntPipe,
+  Put,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+  ApiParam,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { LoginUserDto } from './dto/login-user.dto';
-import { Public } from '../../common';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { Public, Roles } from '../../common';
 
+@ApiTags('用户管理')
+@ApiBearerAuth('JWT-auth')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  /**
-   * 用户注册
-   */
-  @Public()
-  @Post('register')
-  async register(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.register(createUserDto);
-  }
-
-  /**
-   * 用户登录
-   */
-  @Public()
-  @Post('login')
-  @HttpCode(HttpStatus.OK)
-  async login(@Body() loginDto: LoginUserDto) {
-    return this.usersService.login(loginDto.userName, loginDto.password);
-  }
-
-  /**
-   * 获取用户列表（分页）
-   */
   @Get()
+  @ApiOperation({ summary: '获取用户列表' })
+  @ApiQuery({ name: 'pageNum', required: false, description: '页码', example: 1 })
+  @ApiQuery({ name: 'pageSize', required: false, description: '每页数量', example: 10 })
+  @ApiResponse({ status: 200, description: '获取成功' })
   async findAll(
     @Query('pageNum', new ParseIntPipe({ optional: true })) pageNum = 1,
     @Query('pageSize', new ParseIntPipe({ optional: true })) pageSize = 10,
@@ -49,18 +42,34 @@ export class UsersController {
     return this.usersService.findAll(pageNum, pageSize);
   }
 
-  /**
-   * 获取单个用户
-   */
   @Get(':id')
+  @ApiOperation({ summary: '获取用户详情' })
+  @ApiParam({ name: 'id', description: '用户ID', example: 1 })
+  @ApiResponse({ status: 200, description: '获取成功' })
+  @ApiResponse({ status: 404, description: '用户不存在' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
   }
 
-  /**
-   * 删除用户
-   */
+  @Put(':id')
+  @ApiOperation({ summary: '更新用户信息' })
+  @ApiParam({ name: 'id', description: '用户ID', example: 1 })
+  @ApiResponse({ status: 200, description: '更新成功' })
+  @ApiResponse({ status: 404, description: '用户不存在' })
+  @Roles('admin')
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.usersService.update(id, updateUserDto);
+  }
+
   @Delete(':id')
+  @ApiOperation({ summary: '删除用户' })
+  @ApiParam({ name: 'id', description: '用户ID', example: 1 })
+  @ApiResponse({ status: 200, description: '删除成功' })
+  @ApiResponse({ status: 404, description: '用户不存在' })
+  @Roles('admin')
   async delete(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.delete(id);
   }

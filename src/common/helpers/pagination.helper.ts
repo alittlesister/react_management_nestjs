@@ -1,5 +1,6 @@
 // src/common/helpers/pagination.helper.ts
 import { Injectable } from '@nestjs/common';
+import { SelectQueryBuilder, ObjectLiteral } from 'typeorm';
 
 export interface PaginationOptions {
   pageNum: number;
@@ -18,6 +19,25 @@ export interface PaginationResult<T> {
 
 @Injectable()
 export class PaginationHelper {
+  /**
+   * 使用 QueryBuilder 进行分页查询
+   */
+  async paginate<T extends ObjectLiteral>(
+    queryBuilder: SelectQueryBuilder<T>,
+    pageNum: number,
+    pageSize: number,
+  ): Promise<PaginationResult<T>> {
+    const validated = this.validate(pageNum, pageSize);
+    const skip = this.getSkip(validated.pageNum, validated.pageSize);
+
+    const [data, total] = await queryBuilder
+      .skip(skip)
+      .take(validated.pageSize)
+      .getManyAndCount();
+
+    return this.create(data, total, validated);
+  }
+
   /**
    * 创建分页结果
    */

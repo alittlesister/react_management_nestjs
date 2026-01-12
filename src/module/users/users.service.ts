@@ -131,6 +131,27 @@ export class UsersService {
   }
 
   /**
+   * 更新用户信息
+   */
+  async update(id: number, updateData: Partial<CreateUserDto>) {
+    const user = await this.findOne(id);
+
+    // 如果更新密码，需要加密
+    if (updateData.password) {
+      updateData.password = await this.passwordService.hashPassword(
+        updateData.password,
+      );
+    }
+
+    Object.assign(user, updateData);
+    const updatedUser = await this.userRepository.save(user);
+
+    // 移除密码字段
+    const { password, ...result } = updatedUser;
+    return result;
+  }
+
+  /**
    * 删除用户
    */
   async delete(id: number) {

@@ -1,15 +1,16 @@
+// src/module/auth/dto/register.dto.ts
+import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsNotEmpty,
-  MaxLength,
   IsString,
+  IsNotEmpty,
   MinLength,
+  MaxLength,
   IsEmail,
   IsMobilePhone,
   IsOptional,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
 
-export class CreateUserDto {
+export class RegisterDto {
   @ApiProperty({ description: '用户名', example: 'testuser', minLength: 6, maxLength: 20 })
   @IsString()
   @IsNotEmpty({ message: '用户名不能为空' })
@@ -40,13 +41,4 @@ export class CreateUserDto {
   @IsMobilePhone('zh-CN', {}, { message: '手机号格式不正确' })
   @IsNotEmpty({ message: '手机号不能为空' })
   phone: string;
-
-  @ApiProperty({ description: '创建人', required: false })
-  @IsString()
-  @IsOptional()
-  created_by?: string;
-
-  @IsString()
-  @IsOptional()
-  updated_by?: string;
 }

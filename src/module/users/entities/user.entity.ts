@@ -1,5 +1,6 @@
-import { Entity, Column, Index } from 'typeorm';
+import { Entity, Column, Index, ManyToMany, JoinTable } from 'typeorm';
 import { BaseEntity } from '../../../common';
+import { Role } from '../../role/entities/role.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -21,6 +22,14 @@ export class User extends BaseEntity {
 
   @Column({ default: true, comment: '是否激活' })
   isActive: boolean;
+
+  @ManyToMany(() => Role, (role) => role.users)
+  @JoinTable({
+    name: 'user_roles',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' },
+  })
+  roles: Role[];
 
   // BaseEntity 已包含以下字段：
   // - id: number
